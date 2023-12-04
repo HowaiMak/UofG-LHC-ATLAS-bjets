@@ -86,10 +86,10 @@ namespace Rivet {
       book(_hjcount["NJets"],"Njets", 2, 1.5, 3.5);
       book(_hjcount["NBJets"],"NBjets", 4, -0.5, 3.5);
       book(_hjcount["fBJets"],"fBjets", 5, 0.0, 1.0);
-      Scatter1D snj("/ATLAS_2023_BJETS/NJetsEff");
-      Scatter1D snb("/ATLAS_2023_BJETS/NBJetsEff");
-      _s["NJetsEff"] = registerAO(snj);
-      _s["NBJetsEff"] = registerAO(snb);
+      Scatter2D snj("/ATLAS_2023_BJETS/NJetsEff");
+      Scatter2D snb("/ATLAS_2023_BJETS/NBJetsEff");
+      _s2["NJetsEff"] = registerAO(snj);
+      _s2["NBJetsEff"] = registerAO(snb);
 
       // Book jet structure histograms
       book(_h["nsj"],"Nsubjets", 10, -0.5, 9.5);
@@ -179,7 +179,7 @@ namespace Rivet {
 
       /// @todo Add a loop to compute and fill substructure for all b-jets
       /// @todo Then fill separate histograms for light (non-b) jets and b-jets
-      for (unsigned i=0; i <= bjets.size(); i++) {
+      for (unsigned i=0; i <= bjets.size() - 1; i++) {
 
         // Extract the leading jet to perform calculation
         // Replace jets with tr_jets if trimming is applied
@@ -246,8 +246,8 @@ namespace Rivet {
       scale(_hjcount["Njets"], 1/sumOfWeights());
       scale(_hjcount["NBjets"], 1/sumOfWeights());
       normalize(_hjcount["fBjets"]);
-      //barchart(_hjcount["NJets"], _s["NJetsEff"]);
-      //barchart(_hjcount["NBJets"], _s["NBJetsEff"]);
+      barchart(_hjcount["NJets"], _s2["NJetsEff"]);
+      barchart(_hjcount["NBJets"], _s2["NBJetsEff"]);
 
       scale(_h, crossSection()/picobarn/sumOfWeights());
     };
@@ -257,6 +257,7 @@ namespace Rivet {
     map<string, Histo1DPtr> _h, _hjcount;
     map<string, CounterPtr> _c;
     map<string, Scatter1DPtr> _s;
+    map<string, Scatter2DPtr> _s2;
     /// @}
 
     //fastjet::Filter _trimmer;
