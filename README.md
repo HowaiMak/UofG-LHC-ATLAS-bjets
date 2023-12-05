@@ -25,11 +25,14 @@ In order to switch between the modes, modify ttbar-dilep.cmnd file by commenting
 The procedure used to start-up a simulation is as follows:
 1. On your computer with docker desktop installed and opened, insert
      - "docker run -it --rm -v $PWD:/host hepstore/rivet-pythia"
+   
    in CMD, where $PWD is the directory where you would like to store the codes and simulation. You should be in the docker workplace if it's successfully pulled.
 3. Having both the ATLAS-2023-BJETS.cc and ttbar-dilep.cmnd in the previous directory, type in
      - "rivet-build ATLAS-2023-BJETS"
+   
    in the workplace and a shared object called RivetAnalysis.so (defult name, can be assigned) will be created. 
 4. Start the simulation by typing
      - "pythia8-main93 -c ttbar-dilep.cmnd -o FILENAME -n EVENTNUM"
+   
    where "FILENAME" will be the name of the output .yoda file, and "EVENTNUM" is the number of events to be run.
 
