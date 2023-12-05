@@ -39,9 +39,10 @@ namespace Rivet {
 
     /// Book histograms and initialise projections before the run
     void init() {
+      // Test if Signal "SIG" (ttbar or diboson) or Background "BKG" (Z+jet) mode from cmnd file
+      _signalmode = (getOption("MODE", "SIG") == "SIG");
 
       // Initialise and register projections
-
     	// Photons
     	PromptFinalState photons(Cuts::abspid == PID::PHOTON);
 
@@ -64,6 +65,7 @@ namespace Rivet {
     	vfs.addVetoOnThisFinalState(all_dressed_el);
     	vfs.addVetoOnThisFinalState(all_dressed_mu);
     	//vfs.addVetoOnThisFinalState(neutrinos);
+
       FastJets jetfs(vfs, FastJets::ANTIKT, 0.4, JetAlg::Muons::ALL);
     	declare(jetfs, "jets");
 
@@ -73,32 +75,38 @@ namespace Rivet {
 
       declare(MissingMomentum(), "ETmiss");
 
-      // Trimming function
-      //_trimmer = fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05));
-
-      // Book counter pointers and efficiency in scatter
-      book(_c["JetsNum"], "JetsNumber");
-      book(_c["bJetNum"], "BjetsNumber");
+      // Book jet count and efficency scatter
+      book(_c["JetsNum"], "JetsNum");
+      book(_c["bJetsNum"], "bJetsNum");
       Scatter1D s("/ATLAS_2023_BJETS/Efficiency");
       _s["Eff"] = registerAO(s);
 
-      // Book jet count histograms
-      book(_hjcount["NJets"],"Njets", 2, 1.5, 3.5);
-      book(_hjcount["NBJets"],"NBjets", 4, -0.5, 3.5);
-      book(_hjcount["fBJets"],"fBjets", 5, 0.0, 1.0);
-      Scatter2D snj("/ATLAS_2023_BJETS/NJetsEff");
-      Scatter2D snb("/ATLAS_2023_BJETS/NBJetsEff");
-      _s2["NJetsEff"] = registerAO(snj);
-      _s2["NBJetsEff"] = registerAO(snb);
+      // Book jet count and efficiency histograms and 2D scatter for barchart representation
+      book(_hjcount["NJets"],"NJets", 2, 1.5, 3.5);
+      book(_hjcount["NbJets"],"NbJets", 4, -0.5, 3.5);
+      book(_hjcount["fbJets"],"fbJets", 5, 0.0, 1.0);
+      Scatter2D nj("/ATLAS_2023_BJETS/NJetsEff");
+      Scatter2D nb("/ATLAS_2023_BJETS/NbJetsEff");
+      _s2["NJetsEff"] = registerAO(nj);
+      _s2["NbJetsEff"] = registerAO(nb);
 
-      // Book jet structure histograms
-      book(_h["nsj"],"Nsubjets", 10, -0.5, 9.5);
-      book(_h["tau21"],"tau21", 40, 0.0, 2.0);
-      book(_h["lha"],"LesHouchesAngularity", 35, 0.0, 0.7);
-      book(_h["c2"],"C2correlation", 30, 0.0, 0.3);
-      book(_h["d2"],"D2correlation", 60, 0.0, 4.0);
-      book(_h["ecf2"],"EnergyCorrelationFunction2", 30, 0.0, 0.2);
-      book(_h["ecf3"],"EnergyCorrelationFunction3", 30, 0.0, 0.01);
+      // Book bjets substructure histograms
+      book(_h["bJetsNSJ"],"bJetsNSJ", 10, -0.5, 9.5);
+      book(_h["bJetsTAU21"],"bJetsTAU21", 40, 0.0, 2.0);
+      book(_h["bJetsLHA"],"bJetsLHA", 35, 0.0, 0.7);
+      book(_h["bJetsC2"],"bJetsC2", 30, 0.0, 0.3);
+      book(_h["bJetsD2"],"bJetsD2", 60, 0.0, 4.0);
+      book(_h["bJetsECF2"],"bJetsECF2", 30, 0.0, 0.2);
+      book(_h["bJetsECF3"],"bJetsECF3", 30, 0.0, 0.01);
+
+      // Book light jets substructure histograms
+      book(_h["LJetsNSJ"],"LJetsNSJ", 10, -0.5, 9.5);
+      book(_h["LJetsTAU21"],"LJetsTAU21", 40, 0.0, 2.0);
+      book(_h["LJetsLHA"],"LJetsLHA", 35, 0.0, 0.7);
+      book(_h["LJetsC2"],"LJetsC2", 30, 0.0, 0.3);
+      book(_h["LJetsD2"],"LJetsD2", 60, 0.0, 4.0);
+      book(_h["LJetsECF2"],"LJetsECF2", 30, 0.0, 0.2);
+      book(_h["LJetsECF3"],"LJetsECF3", 30, 0.0, 0.01);
     };
 
 
@@ -120,7 +128,7 @@ namespace Rivet {
 
       // Select jets ghost-associated to B-hadrons with a certain fiducial selection
       Jets bjets = filter_select(jets, [](const Jet& jet) {
-        return jet.bTagged(Cuts::pT > 5*GeV && Cuts::abseta < 2.5);
+        return jet.bTagged(Cuts::pT > 5*GeV);
       });
 
       /// Dilepton constain
@@ -136,79 +144,70 @@ namespace Rivet {
       if (ll.mass() <= 15*GeV ) vetoEvent;
       */
 
-      // Veto event if there are not exactly 2 jets
-      //if (jets.size() != 2) vetoEvent;
-
-      // Veto event if there are no 2 jets or 3 jets
-      if (jets.size() < 2 || jets.size() > 3)  vetoEvent;
+      if (_signalmode) {
+        // Selection for ttbar or diboson events
+        // Veto event if there are no 2 jets or 3 jets
+        if (jets.size() < 2 || jets.size() > 3)  vetoEvent;
+      } else {
+        // Selection for Z + jet events
+        // Veto event if there is not at least 1 jet
+        if (jets.size() < 1)  vetoEvent;
+      };
 
       // Fill total jet counter before 2-bjet-selections
       _c["JetsNum"] -> fill(jets.size());
-      _c["bJetNum"] -> fill(bjets.size());
+      _c["bJetsNum"] -> fill(bjets.size());
 
       // Jet multiplicity histograms
       _hjcount["NJets"] -> fill(jets.size());
-      _hjcount["NBJets"] -> fill(bjets.size());
-      _hjcount["fBJets"] -> fill(bjets.size()/jets.size());
+      _hjcount["NbJets"] -> fill(bjets.size());
+      _hjcount["fbJets"] -> fill(bjets.size()/double(jets.size()));
 
-      // Veto even if there is no b-jets
-      if (bjets.empty()) vetoEvent;
-      
-      // Veto event if the number of b-jets not exactly 2
-      if (bjets.size() != 2)  vetoEvent;
+      // Filter jets within ETA 2.5 for analysis
+      Jets FilterJets = filter_select(jets, Cuts::abseta < 2.5);
+      Jets FilterbJets = filter_select(bjets, Cuts::abseta < 2.5);
+
+      // Further selection for ttbar or diboson events
+      if (_signalmode) {
+        // Veto even if there is no b-jets
+        if (FilterJets.empty()) vetoEvent;
+        // Veto event if the number of b-jets not exactly 2
+        if (FilterbJets.size() != 2)  vetoEvent;
+      };
 
       // Jet structure base off of code: ATLAS_2019_I1724098
 
-      // Trim the retrieved clustered jets
-      /*
-      PseudoJets tr_jets;
-      for (size_t i = 0; i < jets.size(); ++i) {
-        tr_jets += _trimmer(jets[i]);
-        tr_jets[tr_jets.size()-1].set_user_index(i);
-      }
-      
-      size_t nBaseline = count(tr_jets, [](const Jet &j) { return j.pT() > 200*GeV && j.abseta() < 2.5; });
-      if (nBaseline < 2)  return;
+      /// Fill substructure histograms for b-jets and light (non-b) jets seperately
+      for (const Jet& j : FilterJets) {
+        // Test if a b-jet or not
+        bool isBjet = j.bTagged(Cuts::pT > 5*GeV);
 
-      ifilter_select(tr_jets, [](const PseudoJet &j) { return j.perp() > 450*GeV; });
-      if (tr_jets.size() > 1)  tr_jets = sorted_by_pt(tr_jets);
-      else if (tr_jets.empty())  return;
-
-      if (abs(tr_jets[0].eta()) > 1.5)  return;
-      */
-
-      /// @todo Add a loop to compute and fill substructure for all b-jets
-      /// @todo Then fill separate histograms for light (non-b) jets and b-jets
-      for (unsigned i=0; i <= bjets.size() - 1; i++) {
-
-        // Extract the leading jet to perform calculation
-        // Replace jets with tr_jets if trimming is applied
-        const fastjet::PseudoJet &LJet = jets[i];
+        const fastjet::PseudoJet &anaJet = j;
 
         // Declare jet structure variables
-        double nsub, lha, ecf2, ecf3, c2, d2, tau21;
+        double nsj, lha, ecf2, ecf3, c2, d2, tau21;
         lha = 0.0;
 
         // NSubjettiness
         JetDefinition subjet_def(fastjet::kt_algorithm, 0.2);
-        ClusterSequence subjet_cs(LJet.constituents(), subjet_def);
+        ClusterSequence subjet_cs(anaJet.constituents(), subjet_def);
         PseudoJets subjets = sorted_by_pt(subjet_cs.inclusive_jets(10.0));
-        nsub = subjets.size();
+        nsj = subjets.size();
         
         fastjet::contrib::Nsubjettiness nSub1(1, fastjet::contrib::OnePass_WTA_KT_Axes(), fastjet::contrib::NormalizedMeasure(beta,Rcut));
         fastjet::contrib::Nsubjettiness nSub2(2, fastjet::contrib::OnePass_WTA_KT_Axes(), fastjet::contrib::NormalizedMeasure(beta,Rcut));
-        double tau1 = nSub1.result(LJet);
-        double tau2 = nSub2.result(LJet);
+        double tau1 = nSub1.result(anaJet);
+        double tau2 = nSub2.result(anaJet);
         if(tau1 != 0) tau21 = tau2/tau1;
         else tau21 = -99;
 
         // LHA
-        for (const PseudoJet& p : LJet.constituents()){
+        for (const PseudoJet& p : anaJet.constituents()){
           double pt = p.pt();
-          double theta = p.squared_distance(LJet);
+          double theta = p.squared_distance(anaJet);
           lha += pow(pt, 1.0) * pow(theta, 0.25);
         }
-        double lterm = pow(LJet.pt(), 1.0) * pow(1.0, 0.5);
+        double lterm = pow(anaJet.pt(), 1.0) * pow(1.0, 0.5);
         if (lterm)  lha /= lterm;
         else        lha = -99;
 
@@ -217,9 +216,9 @@ namespace Rivet {
         fastjet::contrib::EnergyCorrelator ECF2(2,beta,fastjet::contrib::EnergyCorrelator::pt_R);
         fastjet::contrib::EnergyCorrelator ECF1(1,beta,fastjet::contrib::EnergyCorrelator::pt_R);
 
-        double recf3 = ECF3(LJet);
-        double recf2 = ECF2(LJet);
-        double recf1 = ECF1(LJet);
+        double recf3 = ECF3(anaJet);
+        double recf2 = ECF2(anaJet);
+        double recf1 = ECF1(anaJet);
 
         c2 = (recf2 != 0 ? recf3 * recf1 / (recf2*recf2) : -1);
         d2 = (recf2 != 0 ? recf3 * (recf1*recf1*recf1) /(recf2*recf2*recf2) : -1);
@@ -227,27 +226,37 @@ namespace Rivet {
         ecf2 = (recf1 !=0 ? recf2 /(recf1*recf1) : -1);
         ecf3 = (recf1 !=0 ? recf3 / (recf1*recf1*recf1) : -1);
 
-        // Fill bjet counter and structure histograms
-        _h["nsj"]->fill(nsub);
-        _h["tau21"]->fill(tau21);
-        _h["c2"]->fill(c2);
-        _h["d2"]->fill(d2);
-        _h["lha"]->fill(lha);
-        _h["ecf2"]->fill(ecf2);
-        _h["ecf3"]->fill(ecf3);
+        // Fill parallel histogram collections for b and light jets, using isBjet
+        if (isBjet) {
+          _h["bJetsNSJ"]->fill(nsj);
+          _h["bJetsTAU21"]->fill(tau21);
+          _h["bJetsC2"]->fill(c2);
+          _h["bJetsD2"]->fill(d2);
+          _h["bJetsLHA"]->fill(lha);
+          _h["bJetsECF2"]->fill(ecf2);
+          _h["bJetsECF3"]->fill(ecf3);
+        } else {
+          _h["LJetsNSJ"]->fill(nsj);
+          _h["LJetsTAU21"]->fill(tau21);
+          _h["LJetsC2"]->fill(c2);
+          _h["LJetsD2"]->fill(d2);
+          _h["LJetsLHA"]->fill(lha);
+          _h["LJetsECF2"]->fill(ecf2);
+          _h["LJetsECF3"]->fill(ecf3);
+        };
       };
     };
     
     void finalize() {
       // Return the Efficiency dividing _c["bJetNum"] by _c["JetsNum"] and store into Scatter _s["Eff"]
-      divide(_c["bJetNum"], _c["JetsNum"], _s["Eff"]);
+      divide(_c["bJetsNum"], _c["JetsNum"], _s["Eff"]);
       scale(_c, crossSection()/picobarn/sumOfWeights());
 
-      scale(_hjcount["Njets"], 1/sumOfWeights());
-      scale(_hjcount["NBjets"], 1/sumOfWeights());
-      normalize(_hjcount["fBjets"]);
+      scale(_hjcount["NJets"], 1/sumOfWeights());
+      scale(_hjcount["NbJets"], 1/sumOfWeights());
+      normalize(_hjcount["fbJets"]);
       barchart(_hjcount["NJets"], _s2["NJetsEff"]);
-      barchart(_hjcount["NBJets"], _s2["NBJetsEff"]);
+      barchart(_hjcount["NbJets"], _s2["NbJetsEff"]);
 
       scale(_h, crossSection()/picobarn/sumOfWeights());
     };
@@ -260,8 +269,7 @@ namespace Rivet {
     map<string, Scatter2DPtr> _s2;
     /// @}
 
-    //fastjet::Filter _trimmer;
-    //size_t _mode;
+    bool _signalmode = true;
 
   };
 
