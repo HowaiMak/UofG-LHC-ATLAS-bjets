@@ -15,7 +15,6 @@ The simulation is run via the Rivet and Pythia systems, respectively. Installati
 
 Rivet is commonly run on Docker desktop, the installation of it can be found at its official page:
 - https://www.docker.com/
-<br />
 Within the code files, comments and references are listed for easy understanding and modification. There are two major events simulation in the codes:
 - Bottom quark signal: $ttbar$
 - Background contaminations: $WW$, $ZZ$, $Z+jet$
