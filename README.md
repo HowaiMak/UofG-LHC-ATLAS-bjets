@@ -12,10 +12,18 @@ The simulation is run via the Rivet and Pythia systems, respectively. Installati
 - https://rivet.hepforge.org/
 - https://gitlab.com/hepcedar/rivet
 - https://pythia.org/latest-manual/Welcome.html
-Rivet is commonly run with Docker desktop, the installation of it can be found at its official page:
+
+Rivet is commonly run on Docker desktop, the installation of it can be found at its official page:
 - https://www.docker.com/
 
 Within the code files, comments and references are listed for easy understanding and modification. There are two major events simulation in the codes:
 - Bottom quark signal: ttbar
 - Background contaminations: WW, ZZ, Z+jet
 In order to switch between the modes, modify ttbar-dilep.cmnd file by commenting out or turn on/off each condition. The detailed applications of the functions and code are all in the pythia manual. The ATLAS_2023_BJETS.cc file can be modified at own convinience for investigating different structures and filtering conditions.
+
+## Startup
+The procedure used to start-up a simulation is as follows:
+1. On your computer with docker desktop installed and opened, insert "docker run -it --rm -v $PWD:/host hepstore/rivet-pythia" in CMD (where $PWD is the directory where you would like to store the codes and simulation). You should be in the docker workplace if it's successfully pulled.
+2. Having both the ATLAS-2023-BJETS.cc and ttbar-dilep.cmnd in the previous directory, type in "rivet-build ATLAS-2023-BJETS" in the workplace and a shared object called RivetAnalysis.so (defult name, can be assigned) will be created. 
+3. Start the simulation by typing $pythia8-main93 -c ttbar-dilep.cmnd -o FILENAME -n EVENTNUM$, where "FILENAME" will be the name of the output .yoda file, and "EVENTNUM" is the number of events to be run.
+
