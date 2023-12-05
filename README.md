@@ -19,7 +19,7 @@ Rivet is commonly run on Docker desktop, the installation of it can be found at 
 Within the code files, comments and references are listed for easy understanding and modification. There are two major events simulation in the codes:
 - Bottom quark signal: $ttbar$
 - Background contaminations: $WW$, $ZZ$, $Z+jet$
-In order to switch between the modes, modify ttbar-dilep.cmnd file by commenting out or turn on/off each condition. The detailed applications of the functions and code are all in the pythia manual. The ATLAS_2023_BJETS.cc file can be modified at own convinience for investigating different structures and filtering conditions.
+//In order to switch between the modes, modify ttbar-dilep.cmnd file by commenting out or turn on/off each condition. The detailed applications of the functions and code are all in the pythia manual. The ATLAS_2023_BJETS.cc file can be modified at own convinience for investigating different structures and filtering conditions.
 
 ## Startup
 The procedure used to start-up a simulation is as follows:
