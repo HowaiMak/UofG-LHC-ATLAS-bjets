@@ -2,13 +2,17 @@
 Beams:eCM = 13000
 
 ! Turn on/off all decay modes of the top quark
-Top:all = on
+Top:all = off
 
 ! Estimation of background contributions
 ! Allow Scattering ffbar to decay into W+ W-
 !WeakDoubleBoson:ffbar2WW = on
 ! Allow Scattering ffbar to gamma/Z0 gamma/Z0
 !WeakDoubleBoson:ffbar2gmZgmZ = on
+
+! gmZ + Light jet
+WeakBosonAndParton:qqbar2gmZg = on
+WeakBosonAndParton:qg2gmZq = on
 
 ! Constrain to the dilepton pair decay channel
 ! Only allow Z to decay into electrons, muons and taus (including neutrinos MET)
@@ -23,6 +27,10 @@ Top:all = on
 15:onIfAny = 11 13
 
 Main:runRivet = on
-Main:analyses = ATLAS_2023_BJETS,MC_JETS,MC_TTBAR
+
+! Analysis for ttbar or diboson events
+!Main:analyses = ATLAS_2023_BJETS->SIG,MC_JETS,MC_TTBAR
+! Analysis for Z+jet events  
+Main:analyses = ATLAS_2023_BJETS->BKG,MC_JETS,MC_TTBAR
 
 
