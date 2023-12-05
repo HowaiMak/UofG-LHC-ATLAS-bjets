@@ -7,4 +7,15 @@ This project is dedicated to measure in-depth the bottom quark jet structures, w
 
 High energy collisions yield a significant quantity of light quarks (u, d, s quarks) and gluon jets, known as the background contamination. A key emphasis in this project lies in establishing solid selection criteria for identifying valid b-jets: A method often referred to as the "Tag and Probe" method. Through the evaluation of the efficiency and purity of these events, the objective is to compare with real data from ATLAS at LHC for the detection of b-quarks.
 
+## Implementation
+The simulation is run via the Rivet and Pythia systems, respectively. Installation and general information can be found on their official website:
+- https://rivet.hepforge.org/
+- https://gitlab.com/hepcedar/rivet
+- https://pythia.org/latest-manual/Welcome.html
+Rivet is commonly run with Docker desktop, the installation of it can be found at its official page:
+- https://www.docker.com/
 
+Within the code files, comments and references are listed for easy understanding and modification. There are two major events simulation in the codes:
+- Bottom quark signal: ttbar
+- Background contaminations: WW, ZZ, Z+jet
+In order to switch between the modes, modify ttbar-dilep.cmnd file by commenting out or turn on/off each condition. The detailed applications of the functions and code are all in the pythia manual. The ATLAS_2023_BJETS.cc file can be modified at own convinience for investigating different structures and filtering conditions.
