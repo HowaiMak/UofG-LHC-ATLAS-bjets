@@ -1,0 +1,106 @@
+#! /usr/bin/env python3
+
+import argparse
+ap = argparse.ArgumentParser()
+ap.add_argument("FILES", nargs="+")
+args = ap.parse_args()
+
+## Import ROOT
+import ROOT
+ROOT.gROOT.SetBatch(True)
+
+# Import matplot and numpy
+import matplotlib.pyplot as plt
+import numpy as np
+
+## Set up file chain
+chain = ROOT.TChain("CollectionTree");
+chain.SetCacheSize(20*1024*1024);
+for f in args.FILES:
+    chain.Add(f)
+
+## Easy way
+#for i, entry in enumerate(chain):
+#    #print(i, entry.n, [x for x in entry.xs])
+#    print(i, entry.EventInfo___NominalAuxDyn.eventNumber)
+
+## Hard way
+import array
+n = array.array("i", [0])
+chain.SetBranchAddress("EventInfo___NominalAuxDyn.eventNumber", n);
+
+#xs = ROOT.std.vector("double")()
+#ept = array.array("f", [0])
+#mpt = array.array("f", [0])
+#tagpb = array.array("f", [0])
+#tagpc = array.array("f", [0])
+#tagpu = array.array("f", [0])
+
+ept = ROOT.std.vector("float")()
+mpt = ROOT.std.vector("float")()
+ephi = ROOT.std.vector("float")()
+mphi = ROOT.std.vector("float")()
+eeta = ROOT.std.vector("float")()
+meta = ROOT.std.vector("float")()
+chain.SetBranchAddress("Muons___NominalAuxDyn.pt", mpt);
+chain.SetBranchAddress("Muons___NominalAuxDyn.phi", mphi);
+chain.SetBranchAddress("Muons___NominalAuxDyn.eta", meta);
+chain.SetBranchAddress("Electrons___NominalAuxDyn.pt", ept);
+chain.SetBranchAddress("Electrons___NominalAuxDyn.phi", ephi);
+chain.SetBranchAddress("Electrons___NominalAuxDyn.eta", eeta);
+
+
+jpt = ROOT.std.vector("float")()
+jphi = ROOT.std.vector("float")()
+jeta = ROOT.std.vector("float")()
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.pt", jpt);
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.phi", jphi);
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.eta", jeta);
+
+lha = ROOT.std.vector("float")()
+c2 = ROOT.std.vector("float")()
+d2 = ROOT.std.vector("float")()
+tau21 = ROOT.std.vector("float")()
+mass = ROOT.std.vector("float")()
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.Angularity", lha);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.C2", c2);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.D2", d2);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.Tau21", tau21);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.m", mass);
+
+tagpb = ROOT.std.vector("double")()
+tagpc = ROOT.std.vector("double")()
+tagpu = ROOT.std.vector("double")()
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pb", tagpb);
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pc", tagpc);
+chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pu", tagpu);
+
+tagpb_list=[]
+
+#chain.SetBranchAddress("xs", xs);
+for i in range(chain.GetEntries()):
+    chain.GetEntry(i)
+    print(i)
+    print("  N: ", len(ept), len(mpt), len(tagpb))
+    if len(ept) > 0:
+        print(" ept: ", ept[0], " eeta: ", eeta[0], " ephi: ", ephi[0])
+    if len(mpt) > 0:
+        print(" mpt: ", mpt[0], " meta: ", meta[0], " mphi: ", mphi[0])
+    if len(jpt) > 0:
+        print(" jpt: ", jpt)
+        print("  tagpb: ", tagpb[0], " tagpc: ", tagpc[0], " tagpu: ", tagpu[0])
+    #jjpt = [float(x) for x in jpt if x > 20000]
+    if len(ept) == 1 and len(mpt) == 1 and ept[0] > 20000 and mpt[0] > 20000 and len(jpt) == 2 and jpt[0] > 30000:
+        print(" SELECTED: ", lha, c2, d2, tau21, mass)
+        for j in range(0, len(tagpb), 2):
+            tagpb_list.append(tagpb[j])
+    print()
+
+print(tagpb_list)
+plt.hist(np.array(tagpb_list), 50)
+
+# TODO: require 1 electron, 1 muon with pT > 20 GeV
+# TODO: need =2 jets per event, choose jet pT threshold > 30 GeV
+# TODO: implement tag and probe vs direct jet ID: understand and use b-tag scores
+# TODO: output jet-structure observables for selected b-jets: compute or find substructure vars!
+# TODO: plot observable-histogram comparisons between direct and probe jet selections
