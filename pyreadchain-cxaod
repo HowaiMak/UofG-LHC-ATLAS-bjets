@@ -85,6 +85,7 @@ chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_p
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pc", tagpc);
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pu", tagpu);
 
+# empty lists for data
 tagpb1=[]
 tagpc1=[]
 tagpu1=[]
@@ -175,22 +176,27 @@ for i in range(chain.GetEntries()):
     if len(ept) == 1 and len(mpt) == 1 and ept[0] > 20000 and mpt[0] > 20000 and len(jpt) > 1 and len(jpt) < 4 and jpt[0] > 30000:
         print(" SELECTED: ", lha, c2, d2, tau21, mass)
 
+        # Jet 1 taggings and scores
         tagpb1.append(tagpb[0])
         tagpc1.append(tagpc[0])
         tagpu1.append(tagpu[0])
         jet1score = np.log(tagpb[0]/(fc*tagpc[0]+(1-fc)*tagpu[0]))
         tagscore1.append(jet1score)
+        # Compute bjet observables
         Direct(jet1score, 0)
         TNP(jet1score, 1)
 
+        # Jet 2 taggings and scores
         tagpb2.append(tagpb[1])
         tagpc2.append(tagpc[1])
         tagpu2.append(tagpu[1])
         jet2score = np.log(tagpb[1]/(fc*tagpc[1]+(1-fc)*tagpu[1]))
         tagscore2.append(jet2score)
+        # Compute bjet observables
         Direct(jet2score, 1)
         TNP(jet2score, 0)
 
+        # Jet 1 taggings and scores
         if len(jpt) == 3:
             tagpb3.append(tagpb[2])
             tagpc3.append(tagpc[2])
@@ -199,6 +205,7 @@ for i in range(chain.GetEntries()):
             tagscore3.append(jet3score)
     print()
 
+# Plots
 def savefigs(name):
     plt.legend()
     for fmt in ["pdf", "png"]:
