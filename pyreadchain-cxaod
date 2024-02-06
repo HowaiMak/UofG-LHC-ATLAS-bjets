@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+from tokenize import Double
 ap = argparse.ArgumentParser()
 ap.add_argument("FILES", nargs="+")
 args = ap.parse_args()
@@ -50,6 +51,7 @@ chain.SetBranchAddress("Electrons___NominalAuxDyn.phi", ephi);
 chain.SetBranchAddress("Electrons___NominalAuxDyn.eta", eeta);
 
 
+# Small jets
 jpt = ROOT.std.vector("float")()
 jphi = ROOT.std.vector("float")()
 jeta = ROOT.std.vector("float")()
@@ -57,17 +59,25 @@ chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.pt", j
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.phi", jphi);
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.eta", jeta);
 
+# Large-R jets
+Jpt = ROOT.std.vector("float")()
+Jphi = ROOT.std.vector("float")()
+Jeta = ROOT.std.vector("float")()
 lha = ROOT.std.vector("float")()
 c2 = ROOT.std.vector("float")()
 d2 = ROOT.std.vector("float")()
 tau21 = ROOT.std.vector("float")()
 mass = ROOT.std.vector("float")()
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.pt", Jpt);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.phi", Jphi);
+chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.eta", Jeta);
 chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.Angularity", lha);
 chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.C2", c2);
 chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.D2", d2);
 chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.Tau21", tau21);
 chain.SetBranchAddress("AntiKt10LCTopoTrimmedPtFrac5SmallR20Jets___NominalAuxDyn.m", mass);
 
+# tag and probe
 tagpb = ROOT.std.vector("double")()
 tagpc = ROOT.std.vector("double")()
 tagpu = ROOT.std.vector("double")()
@@ -75,29 +85,164 @@ chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_p
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pc", tagpc);
 chain.SetBranchAddress("AntiKt4EMPFlowJets_BTagging201903___NominalAuxDyn.DL1r_pu", tagpu);
 
-tagpb_list=[]
+tagpb1=[]
+tagpc1=[]
+tagpu1=[]
+
+tagpb2=[]
+tagpc2=[]
+tagpu2=[]
+
+tagpb3=[]
+tagpc3=[]
+tagpu3=[]
+
+tagscore1=[]
+tagscore2=[]
+tagscore3=[]
+
+obs_lha_direct=[]
+obs_c2_direct=[]
+obs_d2_direct=[]
+obs_tau21_direct=[]
+obs_mass_direct=[]
+
+obs_lha_tnp=[]
+obs_c2_tnp=[]
+obs_d2_tnp=[]
+obs_tau21_tnp=[]
+obs_mass_tnp=[]
+
+fc = 0.03
+
+# DIRECT: if DL1 test pass, append observables of SAME jet        
+def Direct(DL1, n):
+    if DL1 > 2.96:
+        JsMatch_pt=[]
+        JsMatch_eta=[]
+        JsMatch_phi=[]
+        for jn in range(Jpt):
+            dR2 = (jeta[jn] - Jeta[jn])**2 + (jphi[jn] - Jphi[jn])**2
+            if dR2 < 0.7**2:
+                JsMatch_pt.append(Jpt[jn])
+                JsMatch_eta.append(Jeta[jn])
+                JsMatch_phi.append(Jphi[jn])
+            if len(JsMatch_eta) == 1:                   
+                obs_lha_direct.append(lha[n])
+                obs_c2_direct.append(c2[n])
+                obs_d2_direct.append(d2[n])
+                obs_tau21_direct.append(tau21[n])
+                obs_mass_direct.append(mass[n])
+        OBS_direct = [obs_lha_direct, obs_c2_direct, obs_d2_direct, obs_tau21_direct, obs_mass_direct]
+        np.savetxt("Observables_DIRECT", OBS_direct)
+
+# TAG & PROBE: if DL1 test pass, append observables of THE OTHER jet
+def TNP(DL1, n):
+    if DL1 > 2.96:
+        JsMatch_pt=[]
+        JsMatch_eta=[]
+        JsMatch_phi=[]
+        for jn in range(Jpt):
+            dR2 = (jeta[jn] - Jeta[jn])**2 + (jphi[jn] - Jphi[jn])**2
+            if dR2 < 0.7**2:
+                JsMatch_pt.append(Jpt[jn])
+                JsMatch_eta.append(Jeta[jn])
+                JsMatch_phi.append(Jphi[jn])
+            if len(JsMatch_eta) == 1:   
+                obs_lha_tnp.append(lha[n])
+                obs_c2_tnp.append(c2[n])
+                obs_d2_tnp.append(d2[n])
+                obs_tau21_tnp.append(tau21[n])
+                obs_mass_tnp.append(mass[n])
+        OBS_tnp = [obs_lha_tnp, obs_c2_tnp, obs_d2_tnp, obs_tau21_tnp, obs_mass_tnp]
+        np.savetxt("Observables_TNP", OBS_tnp)
 
 #chain.SetBranchAddress("xs", xs);
 for i in range(chain.GetEntries()):
     chain.GetEntry(i)
     print(i)
+    #if len(tagpb1) > 100:
+    #    break 
     print("  N: ", len(ept), len(mpt), len(tagpb))
     if len(ept) > 0:
-        print(" ept: ", ept[0], " eeta: ", eeta[0], " ephi: ", ephi[0])
+        print(" Electron, pt: ", ept[0], " eta: ", eeta[0], " phi: ", ephi[0])
     if len(mpt) > 0:
-        print(" mpt: ", mpt[0], " meta: ", meta[0], " mphi: ", mphi[0])
+        print(" Muon, pt: ", mpt[0], " eta: ", meta[0], " phi: ", mphi[0])
     if len(jpt) > 0:
-        print(" jpt: ", jpt)
-        print("  tagpb: ", tagpb[0], " tagpc: ", tagpc[0], " tagpu: ", tagpu[0])
+        print(" Jet pT: ", jpt)
+        print(" tagpb: ", tagpb[0], " tagpc: ", tagpc[0], " tagpu: ", tagpu[0])
     #jjpt = [float(x) for x in jpt if x > 20000]
-    if len(ept) == 1 and len(mpt) == 1 and ept[0] > 20000 and mpt[0] > 20000 and len(jpt) == 2 and jpt[0] > 30000:
+    if len(ept) == 1 and len(mpt) == 1 and ept[0] > 20000 and mpt[0] > 20000 and len(jpt) > 1 and len(jpt) < 4 and jpt[0] > 30000:
         print(" SELECTED: ", lha, c2, d2, tau21, mass)
-        for j in range(0, len(tagpb), 2):
-            tagpb_list.append(tagpb[j])
+
+        tagpb1.append(tagpb[0])
+        tagpc1.append(tagpc[0])
+        tagpu1.append(tagpu[0])
+        jet1score = np.log(tagpb[0]/(fc*tagpc[0]+(1-fc)*tagpu[0]))
+        tagscore1.append(jet1score)
+        Direct(jet1score, 0)
+        TNP(jet1score, 1)
+
+        tagpb2.append(tagpb[1])
+        tagpc2.append(tagpc[1])
+        tagpu2.append(tagpu[1])
+        jet2score = np.log(tagpb[1]/(fc*tagpc[1]+(1-fc)*tagpu[1]))
+        tagscore2.append(jet2score)
+        Direct(jet2score, 1)
+        TNP(jet2score, 0)
+
+        if len(jpt) == 3:
+            tagpb3.append(tagpb[2])
+            tagpc3.append(tagpc[2])
+            tagpu3.append(tagpu[2])
+            jet3score = np.log(tagpb[2]/(fc*tagpc[2]+(1-fc)*tagpu[2]))
+            tagscore3.append(jet3score)
     print()
 
-print(tagpb_list)
-plt.hist(np.array(tagpb_list), 50)
+def savefigs(name):
+    plt.legend()
+    for fmt in ["pdf", "png"]:
+        plt.savefig(name+"."+fmt, dpi=150)
+
+plt.figure()
+plt.title("Jet1: bottom, charm, up quark tagging")
+plt.xlabel("Tagging")
+plt.ylabel("Probability")
+plt.hist(tagpb1, 50, label="$bjet_1$")
+plt.hist(tagpc1, 50, label="$cjet_1$")
+plt.hist(tagpu1, 50, label="$ujet_1$")
+savefigs("tagging-j1")
+plt.close()
+
+plt.figure()
+plt.title("Jet2: bottom, charm, up quark tagging")
+plt.xlabel("Tagging")
+plt.ylabel("Probability")
+plt.hist(tagpb2, 50, label="$bjet_2$")
+plt.hist(tagpc2, 50, label="$cjet_2$")
+plt.hist(tagpu2, 50, label="$ujet_2$")
+savefigs("tagging-j2")
+plt.close()
+
+plt.figure()
+plt.title("Jet3: bottom, charm, up quark tagging")
+plt.xlabel("Tagging")
+plt.ylabel("Probability")
+plt.hist(tagpb3, 50, label="$bjet_3$")
+plt.hist(tagpc3, 50, label="$cjet_3$")
+plt.hist(tagpu3, 50, label="$ujet_3$")
+savefigs("tagging-j3")
+plt.close()
+
+plt.figure()
+plt.title("All Jets: DLR1 tagging scores")
+plt.xlabel("Tag score")
+plt.ylabel("DLR1")
+plt.hist(tagscore1, 50, label="$\\mathrm{DL1}_1$")
+plt.hist(tagscore2, 50, label="$\\mathrm{DL1}_2$")
+plt.hist(tagscore3, 50, label="$\\mathrm{DL1}_3$")
+savefigs("tag-scores")
+plt.close()
 
 # TODO: require 1 electron, 1 muon with pT > 20 GeV
 # TODO: need =2 jets per event, choose jet pT threshold > 30 GeV
