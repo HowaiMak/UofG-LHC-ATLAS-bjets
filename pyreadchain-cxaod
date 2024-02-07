@@ -37,6 +37,7 @@ chain.SetBranchAddress("EventInfo___NominalAuxDyn.eventNumber", n);
 #tagpc = array.array("f", [0])
 #tagpu = array.array("f", [0])
 
+# Leptons
 ept = ROOT.std.vector("float")()
 mpt = ROOT.std.vector("float")()
 ephi = ROOT.std.vector("float")()
@@ -123,19 +124,17 @@ def Direct(DL1, n):
         JsMatch_eta=[]
         JsMatch_phi=[]
         for jn in range(Jpt):
-            dR2 = (jeta[jn] - Jeta[jn])**2 + (jphi[jn] - Jphi[jn])**2
+            dR2 = (jeta[n] - Jeta[jn])**2 + (np.fmod(jphi[n] - Jphi[jn], 2*np.pi))**2
             if dR2 < 0.7**2:
                 JsMatch_pt.append(Jpt[jn])
                 JsMatch_eta.append(Jeta[jn])
                 JsMatch_phi.append(Jphi[jn])
-            if len(JsMatch_eta) == 1:                   
-                obs_lha_direct.append(lha[n])
-                obs_c2_direct.append(c2[n])
-                obs_d2_direct.append(d2[n])
-                obs_tau21_direct.append(tau21[n])
-                obs_mass_direct.append(mass[n])
-        OBS_direct = [obs_lha_direct, obs_c2_direct, obs_d2_direct, obs_tau21_direct, obs_mass_direct]
-        np.savetxt("Observables_DIRECT", OBS_direct)
+        if len(JsMatch_eta) == 1:                   
+            obs_lha_direct.append(lha[n])
+            obs_c2_direct.append(c2[n])
+            obs_d2_direct.append(d2[n])
+            obs_tau21_direct.append(tau21[n])
+            obs_mass_direct.append(mass[n])
 
 # TAG & PROBE: if DL1 test pass, append observables of THE OTHER jet
 def TNP(DL1, n):
@@ -144,19 +143,17 @@ def TNP(DL1, n):
         JsMatch_eta=[]
         JsMatch_phi=[]
         for jn in range(Jpt):
-            dR2 = (jeta[jn] - Jeta[jn])**2 + (jphi[jn] - Jphi[jn])**2
+            dR2 = (jeta[jn] - Jeta[jn])**2 + (np.fmod(jphi[n] - Jphi[jn], 2*np.pi))**2
             if dR2 < 0.7**2:
                 JsMatch_pt.append(Jpt[jn])
                 JsMatch_eta.append(Jeta[jn])
                 JsMatch_phi.append(Jphi[jn])
-            if len(JsMatch_eta) == 1:   
-                obs_lha_tnp.append(lha[n])
-                obs_c2_tnp.append(c2[n])
-                obs_d2_tnp.append(d2[n])
-                obs_tau21_tnp.append(tau21[n])
-                obs_mass_tnp.append(mass[n])
-        OBS_tnp = [obs_lha_tnp, obs_c2_tnp, obs_d2_tnp, obs_tau21_tnp, obs_mass_tnp]
-        np.savetxt("Observables_TNP", OBS_tnp)
+        if len(JsMatch_eta) == 1:   
+            obs_lha_tnp.append(lha[n])
+            obs_c2_tnp.append(c2[n])
+            obs_d2_tnp.append(d2[n])
+            obs_tau21_tnp.append(tau21[n])
+            obs_mass_tnp.append(mass[n])
 
 #chain.SetBranchAddress("xs", xs);
 for i in range(chain.GetEntries()):
@@ -174,7 +171,7 @@ for i in range(chain.GetEntries()):
         print(" tagpb: ", tagpb[0], " tagpc: ", tagpc[0], " tagpu: ", tagpu[0])
     #jjpt = [float(x) for x in jpt if x > 20000]
     if len(ept) == 1 and len(mpt) == 1 and ept[0] > 20000 and mpt[0] > 20000 and len(jpt) > 1 and len(jpt) < 4 and jpt[0] > 30000:
-        print(" SELECTED: ", lha, c2, d2, tau21, mass)
+        print(" Candidate Selected! ")
 
         # Jet 1 taggings and scores
         tagpb1.append(tagpb[0])
@@ -182,7 +179,7 @@ for i in range(chain.GetEntries()):
         tagpu1.append(tagpu[0])
         jet1score = np.log(tagpb[0]/(fc*tagpc[0]+(1-fc)*tagpu[0]))
         tagscore1.append(jet1score)
-        # Compute bjet observables
+        # Compute tag score and 70% radial tests
         Direct(jet1score, 0)
         TNP(jet1score, 1)
 
@@ -192,11 +189,11 @@ for i in range(chain.GetEntries()):
         tagpu2.append(tagpu[1])
         jet2score = np.log(tagpb[1]/(fc*tagpc[1]+(1-fc)*tagpu[1]))
         tagscore2.append(jet2score)
-        # Compute bjet observables
+        # Compute tag score and 70% radial tests
         Direct(jet2score, 1)
         TNP(jet2score, 0)
 
-        # Jet 1 taggings and scores
+        # Jet 3 taggings and scores
         if len(jpt) == 3:
             tagpb3.append(tagpb[2])
             tagpc3.append(tagpc[2])
@@ -204,6 +201,19 @@ for i in range(chain.GetEntries()):
             jet3score = np.log(tagpb[2]/(fc*tagpc[2]+(1-fc)*tagpu[2]))
             tagscore3.append(jet3score)
     print()
+
+# Saving bjet observable data after tests
+np.savetxt("Observables_DIRECT/LHA", obs_lha_direct)
+np.savetxt("Observables_DIRECT/C2", obs_c2_direct)
+np.savetxt("Observables_DIRECT/D2", obs_d2_direct)
+np.savetxt("Observables_DIRECT/TAU21", obs_tau21_direct)
+np.savetxt("Observables_DIRECT/MASS", obs_mass_direct)
+
+np.savetxt("Observables_TNP/LHA", obs_lha_tnp)
+np.savetxt("Observables_TNP/C2", obs_c2_tnp)
+np.savetxt("Observables_TNP/D2", obs_d2_tnp)
+np.savetxt("Observables_TNP/TAU21", obs_tau21_tnp)
+np.savetxt("Observables_TNP/MASS", obs_mass_tnp)
 
 # Plots
 def savefigs(name):
