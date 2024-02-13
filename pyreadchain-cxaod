@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+from hashlib import sha3_224
 from tokenize import Double
 ap = argparse.ArgumentParser()
 ap.add_argument("FILES", nargs="+")
@@ -10,9 +11,10 @@ args = ap.parse_args()
 import ROOT
 ROOT.gROOT.SetBatch(True)
 
-# Import matplot and numpy
+# Import matplot, numpy, scipy
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
 
 ## Set up file chain
 chain = ROOT.TChain("CollectionTree");
@@ -118,17 +120,17 @@ obs_mass_tnp=[]
 fc = 0.03
 
 # DIRECT: if DL1 test pass, append observables of SAME jet        
-def Direct(DL1, n):
+def Direct(DL1, jn, n):
     if DL1 > 2.96:
         JsMatch_pt=[]
         JsMatch_eta=[]
         JsMatch_phi=[]
-        for jn in range(Jpt):
-            dR2 = (jeta[n] - Jeta[jn])**2 + (np.fmod(jphi[n] - Jphi[jn], 2*np.pi))**2
+        for Jn in range(len(Jpt)):
+            dR2 = (jeta[jn] - Jeta[Jn])**2 + (np.fmod(jphi[jn] - Jphi[Jn], np.pi))**2
             if dR2 < 0.7**2:
-                JsMatch_pt.append(Jpt[jn])
-                JsMatch_eta.append(Jeta[jn])
-                JsMatch_phi.append(Jphi[jn])
+                JsMatch_pt.append(Jpt[Jn])
+                JsMatch_eta.append(Jeta[Jn])
+                JsMatch_phi.append(Jphi[Jn])
         if len(JsMatch_eta) == 1:                   
             obs_lha_direct.append(lha[n])
             obs_c2_direct.append(c2[n])
@@ -137,17 +139,17 @@ def Direct(DL1, n):
             obs_mass_direct.append(mass[n])
 
 # TAG & PROBE: if DL1 test pass, append observables of THE OTHER jet
-def TNP(DL1, n):
+def TNP(DL1, jn, n):
     if DL1 > 2.96:
         JsMatch_pt=[]
         JsMatch_eta=[]
         JsMatch_phi=[]
-        for jn in range(Jpt):
-            dR2 = (jeta[jn] - Jeta[jn])**2 + (np.fmod(jphi[n] - Jphi[jn], 2*np.pi))**2
+        for Jn in range(len(Jpt)):
+            dR2 = (jeta[jn] - Jeta[Jn])**2 + (np.fmod(jphi[jn] - Jphi[Jn], np.pi))**2
             if dR2 < 0.7**2:
-                JsMatch_pt.append(Jpt[jn])
-                JsMatch_eta.append(Jeta[jn])
-                JsMatch_phi.append(Jphi[jn])
+                JsMatch_pt.append(Jpt[Jn])
+                JsMatch_eta.append(Jeta[Jn])
+                JsMatch_phi.append(Jphi[Jn])
         if len(JsMatch_eta) == 1:   
             obs_lha_tnp.append(lha[n])
             obs_c2_tnp.append(c2[n])
@@ -180,8 +182,8 @@ for i in range(chain.GetEntries()):
         jet1score = np.log(tagpb[0]/(fc*tagpc[0]+(1-fc)*tagpu[0]))
         tagscore1.append(jet1score)
         # Compute tag score and 70% radial tests
-        Direct(jet1score, 0)
-        TNP(jet1score, 1)
+        Direct(jet1score, 0, 0)
+        TNP(jet1score, 0, 1)
 
         # Jet 2 taggings and scores
         tagpb2.append(tagpb[1])
@@ -190,8 +192,9 @@ for i in range(chain.GetEntries()):
         jet2score = np.log(tagpb[1]/(fc*tagpc[1]+(1-fc)*tagpu[1]))
         tagscore2.append(jet2score)
         # Compute tag score and 70% radial tests
-        Direct(jet2score, 1)
-        TNP(jet2score, 0)
+        Direct(jet2score, 1, 1)
+        TNP(jet2score, 1, 0)
+        
 
         # Jet 3 taggings and scores
         if len(jpt) == 3:
@@ -215,15 +218,29 @@ np.savetxt("Observables_TNP/D2", obs_d2_tnp)
 np.savetxt("Observables_TNP/TAU21", obs_tau21_tnp)
 np.savetxt("Observables_TNP/MASS", obs_mass_tnp)
 
+# Normalising data
+obs_lha_direct_norm = [lha/scipy.std(obs_lha_direct) for lha in obs_lha_direct]
+obs_c2_direct_norm = [c2/scipy.std(obs_c2_direct) for c2 in obs_c2_direct]
+obs_d2_direct_norm = [d2/scipy.std(obs_d2_direct) for d2 in obs_d2_direct]
+obs_tau21_direct_norm = [tau21/scipy.std(obs_tau21_direct) for tau21 in obs_tau21_direct]
+obs_mass_direct_norm = [mass/scipy.std(obs_mass_direct) for mass in obs_mass_direct]
+
+obs_lha_tnp_norm = [lha/scipy.std(obs_lha_tnp) for lha in obs_lha_tnp]
+obs_c2_tnp_norm = [c2/scipy.std(obs_c2_tnp) for c2 in obs_c2_tnp]
+obs_d2_tnp_norm = [d2/scipy.std(obs_d2_tnp) for d2 in obs_d2_tnp]
+obs_tau21_tnp_norm = [tau21/scipy.std(obs_tau21_tnp) for tau21 in obs_tau21_tnp]
+obs_mass_tnp_norm = [mass/scipy.std(obs_mass_tnp) for mass in obs_mass_tnp]
+
 # Plots
 def savefigs(name):
     plt.legend()
     for fmt in ["pdf", "png"]:
         plt.savefig(name+"."+fmt, dpi=150)
 
+# Taggings and scores
 plt.figure()
 plt.title("Jet1: bottom, charm, up quark tagging")
-plt.xlabel("Tagging")
+plt.xlabel("Taggings")
 plt.ylabel("Probability")
 plt.hist(tagpb1, 50, label="$bjet_1$")
 plt.hist(tagpc1, 50, label="$cjet_1$")
@@ -233,7 +250,7 @@ plt.close()
 
 plt.figure()
 plt.title("Jet2: bottom, charm, up quark tagging")
-plt.xlabel("Tagging")
+plt.xlabel("Taggings")
 plt.ylabel("Probability")
 plt.hist(tagpb2, 50, label="$bjet_2$")
 plt.hist(tagpc2, 50, label="$cjet_2$")
@@ -243,7 +260,7 @@ plt.close()
 
 plt.figure()
 plt.title("Jet3: bottom, charm, up quark tagging")
-plt.xlabel("Tagging")
+plt.xlabel("Taggings")
 plt.ylabel("Probability")
 plt.hist(tagpb3, 50, label="$bjet_3$")
 plt.hist(tagpc3, 50, label="$cjet_3$")
@@ -253,12 +270,58 @@ plt.close()
 
 plt.figure()
 plt.title("All Jets: DLR1 tagging scores")
-plt.xlabel("Tag score")
-plt.ylabel("DLR1")
+plt.xlabel("Tag scores")
+plt.ylabel("Frequency")
 plt.hist(tagscore1, 50, label="$\\mathrm{DL1}_1$")
 plt.hist(tagscore2, 50, label="$\\mathrm{DL1}_2$")
 plt.hist(tagscore3, 50, label="$\\mathrm{DL1}_3$")
 savefigs("tag-scores")
+plt.close()
+
+# Observables
+plt.figure()
+plt.title("Direct, Tag & Probe: LHA")
+plt.xlabel("Les Houches Angularity")
+plt.ylabel("Normalised Jets")
+plt.hist(obs_lha_tnp_norm, 50, label="$TNP$")
+plt.hist(obs_lha_direct_norm, 50, label="$Direct$")
+savefigs("LHA")
+plt.close()
+
+plt.figure()
+plt.title("Direct, Tag & Probe: C2")
+plt.xlabel("C2 correlation")
+plt.ylabel("Normalised Jets")
+plt.hist(obs_c2_tnp_norm, 50, label="$TNP$")
+plt.hist(obs_c2_direct_norm, 50, label="$Direct$")
+savefigs("C2")
+plt.close()
+
+plt.figure()
+plt.title("Direct, Tag & Probe: D2")
+plt.xlabel("D2 correlation")
+plt.ylabel("Normalised Jets")
+plt.hist(obs_d2_tnp_norm, 50, label="$TNP$")
+plt.hist(obs_d2_direct_norm, 50, label="$Direct$")
+savefigs("D2")
+plt.close()
+
+plt.figure()
+plt.title("Direct, Tag & Probe: TAU21")
+plt.xlabel("N-subjettiness")
+plt.ylabel("Normalised Jets")
+plt.hist(obs_tau21_tnp_norm, 50, label="$TNP$")
+plt.hist(obs_tau21_direct_norm, 50, label="$Direct$")
+savefigs("TAU21")
+plt.close()
+
+plt.figure()
+plt.title("Direct, Tag & Probe: Mass")
+plt.xlabel("Mass")
+plt.ylabel("Normalised Jets")
+plt.hist(obs_mass_tnp_norm, 50, label="$TNP$")
+plt.hist(obs_mass_direct_norm, 50, label="$Direct$")
+savefigs("MASS")
 plt.close()
 
 # TODO: require 1 electron, 1 muon with pT > 20 GeV
