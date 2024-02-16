@@ -295,10 +295,10 @@ print()
 
 # chi2 test
 def Chi2(obs_a, obs_b, NAME):
-    chi2 = np.sum(np.divide(np.subtract(obs_a, obs_b), np.sum(obs_a + obs_b)))
+    chi2 = np.sum((np.divide(np.square(np.subtract(obs_a, obs_b)), np.sum(obs_a + obs_b))))
     print(NAME, " CHI2 test : ", chi2)
     print()
-    return chi2
+    plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
 
 # JET1 Observables plots
 plt.figure()
@@ -307,8 +307,7 @@ plt.xlabel("Les Houches Angularity")
 plt.ylabel("Normalised bottom jets frequency")
 plt.hist(lha_tnp_hist, label="$TNP$")
 plt.hist(lha_direct_hist, label="$Direct$")
-chi2 = Chi2(lha_direct_hist, lha_tnp_hist, "LHA")
-plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
+Chi2(lha_direct_hist, lha_tnp_hist, "LHA")
 savefigs("LHA")
 plt.close()
 
@@ -319,8 +318,7 @@ plt.xlabel("C2 correlation")
 plt.ylabel("Normalised bottom jets frequency")
 plt.hist(c2_tnp_hist, label="$TNP$")
 plt.hist(c2_direct_hist, label="$Direct$")
-chi2 = Chi2(c2_direct_hist, c2_tnp_hist, "C2")
-plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
+Chi2(c2_direct_hist, c2_tnp_hist, "C2")
 savefigs("C2")
 plt.close()
 
@@ -331,8 +329,7 @@ plt.xlabel("D2 correlation")
 plt.ylabel("Normalised bottom jets frequency")
 plt.hist(d2_tnp_hist, label="$TNP$")
 plt.hist(d2_direct_hist, label="$Direct$")
-chi2 = Chi2(d2_direct_hist, d2_tnp_hist, "D2")
-plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
+Chi2(d2_direct_hist, d2_tnp_hist, "D2")
 savefigs("D2")
 plt.close()
 
@@ -343,8 +340,7 @@ plt.xlabel("N-subjettiness")
 plt.ylabel("Normalised bottom jets frequency")
 plt.hist(tau21_tnp_hist, label="$TNP$")
 plt.hist(tau21_direct_hist, label="$Direct$")
-chi2 = Chi2(tau21_direct_hist, tau21_tnp_hist, "TAU21")
-plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
+Chi2(tau21_direct_hist, tau21_tnp_hist, "TAU21")
 savefigs("TAU21")
 plt.close()
 
@@ -354,11 +350,9 @@ plt.xlabel("Mass")
 plt.ylabel("Normalised bottom jets frequency")
 plt.hist(mass_tnp_hist, label="$TNP$")
 plt.hist(mass_direct_hist, label="$Direct$")
-chi2 = Chi2(mass_direct_hist, mass_tnp_hist, "MASS")
-plt.hist([], color="w", alpha=0, label="$\chi^2$: {}".format(chi2))
+Chi2(mass_direct_hist, mass_tnp_hist, "MASS")
 savefigs("MASS")
 plt.close()
-
 
 print("All Evaluations completed!")
 
