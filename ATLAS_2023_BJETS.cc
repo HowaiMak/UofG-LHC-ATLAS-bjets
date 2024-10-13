@@ -148,6 +148,32 @@ namespace Rivet {
       if (ll.mass() <= 15*GeV ) vetoEvent;
       */
 
+      /// Dilepton constain 2 (modify based on ttbar-dilep condition)
+      /*
+      // Veto event if there are not exactly one electron and one muon
+      if (electrons.size() != 1 || muons.size() != 1)  vetoEvent;
+
+      // Veto event if the selected electron and muon are not OS
+      if (electrons[0].charge() == muons[0].charge())  vetoEvent;
+
+      // Veto event with dilepton mass < 15 GeV
+      FourMomentum ll = electrons[0].momentum() + muons[0].momentum();
+      if (ll.mass() <= 15*GeV ) vetoEvent;
+      */
+
+      /// Dilepton constain 3 (modify based on ttbar-dilep condition)
+      /*
+      // Veto event if there are not exactly one electron and one muon
+      if (electrons.size() != 1 || muons.size() != 1)  vetoEvent;
+
+      // Veto event if the selected electron and muon are not OS
+      if (electrons[0].charge() == muons[0].charge())  vetoEvent;
+
+      // Veto event with dilepton mass < 15 GeV
+      FourMomentum ll = electrons[0].momentum() + muons[0].momentum();
+      if (ll.mass() <= 15*GeV ) vetoEvent;
+      */
+
       if (_signalmode) {
         // Selection for ttbar or diboson events
         // Veto event if there are no 2 jets or 3 jets
