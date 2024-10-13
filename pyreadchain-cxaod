@@ -355,9 +355,3 @@ savefigs("MASS")
 plt.close()
 
 print("All Evaluations completed!")
-
-# TODO: require 1 electron, 1 muon with pT > 20 GeV
-# TODO: need =2 jets per event, choose jet pT threshold > 30 GeV
-# TODO: implement tag and probe vs direct jet ID: understand and use b-tag scores
-# TODO: output jet-structure observables for selected b-jets: compute or find substructure vars!
-# TODO: plot observable-histogram comparisons between direct and probe jet selections
