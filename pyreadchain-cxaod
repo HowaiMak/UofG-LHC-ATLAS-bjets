@@ -117,14 +117,14 @@ d2_tnp=[]
 tau21_tnp=[]
 mass_tnp=[]
 
-# DL1 test for b-tagging scores
+# DL1 test b-tagging scores
 def DL1(pb, pc, pu):
     # Fraction of c-quarks
     fc = 0.03
     jetscore = np.log(pb/(fc*pc+(1-fc)*pu))
     return jetscore
 
-# 70% radial tests on jets with passing scores        
+# 70% radial tests jets with passing scores        
 def RadialTest(DL1, jn):
     JsMatch_pt=[]
     # Filter out non b-jets
@@ -134,11 +134,11 @@ def RadialTest(DL1, jn):
             dR2 = (jeta[jn] - Jeta[Jn])**2 + (np.fmod(jphi[jn] - Jphi[Jn], np.pi))**2
             if dR2 < 0.7**2:
                 JsMatch_pt.append(Jpt[Jn])
-            # Veto if overlapping big jets happen
+            # Veto overlapping big jets
             if len(JsMatch_pt) > 1:
                 break
         
-    # Only interested in observables of jet1 (highest pT)
+    # Only interested in jet1 (highest pT)
     if len(JsMatch_pt) == 1:
         # Direct
         if jn == 0:
@@ -237,7 +237,7 @@ def norm(direct_data, tnp_data, NBINS):
 
     return direct_hist, direct_errs, tnp_hist, tnp_errs
 
-# Dumping observables for normalisation
+# Normalise all observables
 lha_direct_hist, lha_direct_errs, lha_tnp_hist, lha_tnp_errs = norm(lha_direct, lha_tnp, 50)
 c2_direct_hist, c2_direct_errs, c2_tnp_hist, c2_tnp_errs = norm(c2_direct, c2_tnp, 50)
 d2_direct_hist, d2_direct_errs, d2_tnp_hist, d2_tnp_errs = norm(d2_direct, d2_tnp, 50)
