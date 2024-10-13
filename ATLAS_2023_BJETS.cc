@@ -1,5 +1,7 @@
 // -*- C++ -*-
 // Base off of code: ATLAS_2022_I2152933.cc
+
+// Library from hepforge rivite
 #include "Rivet/Analysis.hh"
 #include "Rivet/Projections/FinalState.hh"
 #include "Rivet/Projections/VetoedFinalState.hh"
@@ -20,7 +22,7 @@
 #include "Rivet/Projections/SmearedParticles.hh"
 #include "Rivet/Projections/SmearedMET.hh"
 
-
+// Setup Rivit anmespace
 namespace Rivet {
 
   /// @brief bjet structure investigation
@@ -59,6 +61,7 @@ namespace Rivet {
 
     	// Jet forming
     	//const InvisibleFinalState neutrinos(true, true);
+      // Ignore neutrinos (depends on purpose)
 
       // Probe finalstates in a larger angle than ETA
     	VetoedFinalState vfs(FinalState(Cuts::abseta < ETA + 0.4));
@@ -73,6 +76,7 @@ namespace Rivet {
       ChargedFinalState tracks(Cuts::pT > 0.5*GeV && Cuts::abseta < 2.5);
       declare(tracks, "tracks");
 
+      // Create MET from undedected particles
       declare(MissingMomentum(), "ETmiss");
 
       // Book jet count and efficency scatter
@@ -131,7 +135,7 @@ namespace Rivet {
         return jet.bTagged(Cuts::pT > 5*GeV);
       });
 
-      /// Dilepton constain
+      /// Dilepton constain (modify based on ttbar-dilep condition)
       /*
       // Veto event if there are not exactly one electron and one muon
       if (electrons.size() != 1 || muons.size() != 1)  vetoEvent;
