@@ -50,4 +50,8 @@ docker run -it --rm -v $PWD:/host hepstore/rivet-pythia
 rivet-build ATLAS_2023_BJETS.cc -o RivetATLASBJETS.so
 # Generate events (example: 10k tt̄ events)
 pythia8-main93 -c ttbar-dilep.cmnd -o results.yoda -n 10000
+```
 
+---
+
+© 2024 University of Glasgow – Theoretical Physics
