@@ -1,7 +1,6 @@
 # ATLAS_2023_BJETS  
-**Monte Carlo Simulation of High-Energy Particle Collisions**  
+**Monte Carlo Simulation of High-Energy Particle Collisions**
 
-![CERN LHC]([https://via.placeholder.com/800x200.png?text=LHC+ATLAS+Detector+Concept+Image](https://cds.cern.ch/images/CERN-PHOTO-202109-138-5/file?size=medium))  
 *University of Glasgow Physics Honours Project - PHYS4022P*
 
 ---
