@@ -1,7 +1,7 @@
 # ATLAS_2023_BJETS  
 **Monte Carlo Simulation of High-Energy Particle Collisions**  
 
-![CERN LHC](https://via.placeholder.com/800x200.png?text=LHC+ATLAS+Detector+Concept+Image)  
+![CERN LHC]([https://via.placeholder.com/800x200.png?text=LHC+ATLAS+Detector+Concept+Image](https://cds.cern.ch/images/CERN-PHOTO-202109-138-5/file?size=medium))  
 *University of Glasgow Physics Honours Project - PHYS4022P*
 
 ---
@@ -47,4 +47,8 @@ This project analyzes bottom quark (`b-jet`) structures in proton-proton collisi
 ```bash
 # Start Rivet-PYTHIA container with directory mounting
 docker run -it --rm -v $PWD:/host hepstore/rivet-pythia
+# Compile analysis code
+rivet-build ATLAS_2023_BJETS.cc -o RivetATLASBJETS.so
+# Generate events (example: 10k tt̄ events)
+pythia8-main93 -c ttbar-dilep.cmnd -o results.yoda -n 10000
 
