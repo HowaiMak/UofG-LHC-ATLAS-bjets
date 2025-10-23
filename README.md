@@ -9,6 +9,8 @@
 **Title:** *"Measuring b-Quark Jet Structure at the LHC"*  
 **Supervisor:** Dr. Andy Buckley  
 
+Paper available at: [DOI: 10.13140/RG.2.2.22336.14087](https://www.researchgate.net/publication/385002919_Measuring_b-quark_jet_structure_at_the_LHC)
+
 This project analyzes bottom quark (`b-jet`) structures in proton-proton collisions at the LHC, focusing on top quark pair (`tt̄`) decay channels. The study investigates jet substructure observables including:
 - **N-Subjettiness**
 - **Les Houches Angularity**
